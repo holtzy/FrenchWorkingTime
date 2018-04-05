@@ -1,0 +1,101 @@
+---
+title: "Horaires de travail en France"
+author: "by [Antoine Rouillard-Pérain](https://github.com/holtzy/) - `r format(Sys.time(), '%d %B %Y')`"
+output:
+  epuRate::epurate:
+    toc: FALSE
+    code_folding: "show"
+---
+
+<br><br>
+
+> Un coup d'oeil sur la situation des différentes professions...
+
+```{r, message=FALSE, warning=FALSE}
+# qq packages nécessaire à l'analyse
+library(tidyverse)
+library(rmarkdown)    # You need this library to run this template.
+library(epuRate)      # Install with devtools: install_github("holtzy/epuRate", force=TRUE)
+library(plotly)       # To transform a ggplot in an interactive graph
+library(htmlwidgets)  # To save the interactive graph as an html file
+library(hrbrthemes)   # To improve the appearance of the ggplot Graphic
+library(ggrepel)      # A clean way to annotate the graphic without overlapping
+```
+
+
+# Source
+***
+Source des données avec [lien](www.windguru.cz).
+Description des données.
+Chargement du jeu de données propre:
+
+```{r}
+data <- read.csv("batypik.dms")
+```
+
+
+# Graphique statique
+***
+Réalisation du graphique
+```{r, fig.width=10, fig.height=8}
+p <- data %>% 
+  ggplot(aes(x = m.previs, y = m.atypik, size=eff, color=as.factor(psl1) )) +
+    geom_point(alpha=0.9) +
+    ylab("exposition aux horaires atypiques") +
+    xlab("score moyen d'imprévisibilité des horaires") + 
+    guides(size=FALSE) +                                                        #suppression de la légende pour la taille des groupes pro
+    labs(
+      title="Horaires de travail pour chaque type de profession en France",
+      subtitle="Le théatre d'une illusion",
+      caption="Source: enquête SUMER | Réalisation: Antoine Rouillard-Pérain",
+      colour="Catégorie") +
+    geom_text_repel( data=data %>% filter(m.previs>90 | m.atypik>150), aes(label=psl)) +
+    geom_abline() +
+    theme_ipsum()
+
+p
+```
+
+Sauvegarde au format png
+```{r, message=FALSE}
+png("FrenchWorkingTime.png", width=600, height=600)
+p
+dev.off()
+```
+
+
+# Graphique dynamique
+***
+
+```{r, fig.width=10}
+# Ajoute une colonne avec le texte du tooltip
+data$text <- paste("profession: ", data$psl,0, "\n", "effectif: ", round(data$eff,0), "\n", "score imprévisibilité: ", round(data$m.atypik,0), "\n", "score horaire atypique: ", round(data$m.previs,0), sep="")
+p <- data %>% 
+  ggplot(aes(x = m.previs, y = m.atypik, size=eff, color=as.factor(psl1), text=text )) +
+    geom_point() +
+    scale_y_continuous ("exposition aux horaires atypiques") +
+    scale_x_continuous ("score moyen d'imprévisibilité des horaires") + 
+    ggtitle("Horaires de travail (enquête SUMER)") +
+    guides(size=FALSE) + #suppression de la légende pour la taille des groupes pro
+    geom_abline()
+
+widg <- ggplotly(p, tooltip="text")
+widg
+```
+
+
+Export de la figure en un format html:
+```{r}
+saveWidget(widg, file = "FrenchWorkingTime.html", selfcontained = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
