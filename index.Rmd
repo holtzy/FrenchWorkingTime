@@ -20,6 +20,7 @@ library(plotly)       # To transform a ggplot in an interactive graph
 library(htmlwidgets)  # To save the interactive graph as an html file
 library(hrbrthemes)   # To improve the appearance of the ggplot Graphic
 library(ggrepel)      # A clean way to annotate the graphic without overlapping
+library(DT)
 ```
 
 
@@ -102,7 +103,16 @@ saveWidget(widg, file = "FrenchWorkingTime.html", selfcontained = TRUE)
 ```
 
 
-
+# Tableau de données
+***
+Ce tableau permet de rechercher une profession en particulier
+```{r}
+tmp <- data %>% 
+  select(-text) %>%
+  mutate( eff=round(eff,0), m.atypik=round(m.atypik,0), m.previs=round(m.previs,0) )
+colnames(tmp) <- c("Catégorie", "Profession", "Effectif", "Score horaire atypique", "Score horaire imprévisible")
+datatable( tmp, rownames = FALSE, filter="top", options = list(pageLength = 15, scrollX=T) )
+```
 
 
 
