@@ -65,7 +65,7 @@ p <- data %>%
       subtitle="Comment se positionnent les professions du rail?",
       caption="Source: enquête SUMER | Réalisation: Antoine Rouillard-Pérain",
       colour="Catégorie") +
-    geom_text_repel( data=data %>% filter(m.previs>90 | m.atypik>150 | col=="professions du rail"), aes(label=psl), hjust=1) +
+    geom_text_repel( data=data %>% filter(m.previs>90 | m.atypik>150 | col=="professions du rail"), aes(label=psl)) +
     theme_ipsum()
 
 p
