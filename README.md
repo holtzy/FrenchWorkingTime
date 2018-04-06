@@ -26,7 +26,7 @@ Static version of the graphic
 
 
 
-Interactive verison
+Interactive version
 --------
 See [here](https://holtzy.github.io/FrenchWorkingTime/)
 
