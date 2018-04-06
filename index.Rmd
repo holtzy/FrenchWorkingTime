@@ -1,6 +1,6 @@
 ---
 title: "Horaires de travail en France"
-author: "by [Antoine Rouillard-Pérain](https://github.com/holtzy/) - `r format(Sys.time(), '%d %B %Y')`"
+author: "by [Antoine Rouillard-Pérain](https://twitter.com/arp_mal) and [Yan Holtz](https://github.com/holtzy/) - `r format(Sys.time(), '%d %B %Y')`"
 output:
   epuRate::epurate:
     toc: FALSE
