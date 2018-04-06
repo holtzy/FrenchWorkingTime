@@ -9,7 +9,7 @@ output:
 
 <br><br>
 
-> Un coup d'oeil sur la situation des différentes professions...
+> Un coup d'oeil sur la situation de différentes professions en France...
 
 ```{r, message=FALSE, warning=FALSE}
 # qq packages nécessaire à l'analyse
@@ -26,8 +26,10 @@ library(DT)
 
 # Source
 ***
-Source des données avec [lien](www.windguru.cz).
-Description des données.
+L’enquête SUMER contient, pour chaque personne interrogée, une question sur le nombre de soirées, de nuit, de samedi et de dimanches travaillés dans l’année. Chaque « évènement » de travail atypique est affecté d’un score, dont le cumul forme un score individuel d’exposition aux horaires atypiques, le score de groupe étant simplement la moyenne des scores individuels.  
+
+L’enquête contient une autre série de question sur la prévisibilité des horaires de travail. Plus l’horizon de prévisibilité des salariés est élevé (plus ils connaissent leurs horaires de travail à l’avance), plus le score d’imprévisibilité est faible.  
+
 Chargement du jeu de données propre:
 
 ```{r}
@@ -37,29 +39,41 @@ data <- read.csv("batypik.dms")
 
 # Graphique statique
 ***
-Réalisation du graphique
+Ces scores n’ont pas de valeurs en soient, ils permettent seulement de positionner les différentes professions (représentées par les catégories INSEE) les unes vis-à-vis des autres. Les effectifs sont donnés à titre purement indicatifs : la pondération de l’enquête SUMER n’est pas faite en fonction des différents groupes socio-professionnels et ne les reflètent qu’imparfaitement.
 ```{r, fig.width=10, fig.height=8}
-p <- data %>% 
-  ggplot(aes(x = m.previs, y = m.atypik, size=eff, color=as.factor(psl1) )) +
-    geom_point(alpha=0.9) +
+# Recode a few profession for the annotation
+data$psl <- recode(data$psl, 
+       `Conducteurs qualifiés d'engins de transport guidés` = "Conducteurs de train",
+       `Agents civils de sécurité et de surveillance` = "Agents de sécurité",
+       `Autres agents et ouvriers qualifiés (sédentaires) des services d'exploitation des transports` = "Cheminots",
+       `Contrôleurs des transports (personnels roulants)` = "Controleurs",
+       `Pompiers (y.c. pompiers militaires)` = "Pompiers",
+       `Assistantes maternelles, gardiennes d'enfants, familles d'accueil` = "Assistantes maternelles"
+        )
+data$col <- recode(data$col, 
+       `cadres et professions intermédiaires` = "cadres et prof. intermédiaires",
+        )
+
+p <- data %>%
+  ggplot(aes(x = m.previs, y = m.atypik, color=col )) +
+    geom_point( aes(size=eff), alpha=0.9) +
     ylab("exposition aux horaires atypiques") +
     xlab("score moyen d'imprévisibilité des horaires") + 
     guides(size=FALSE) +                                                        #suppression de la légende pour la taille des groupes pro
     labs(
       title="Horaires de travail pour chaque type de profession en France",
-      subtitle="Le théatre d'une illusion",
+      subtitle="Comment se positionnent les professions du rail?",
       caption="Source: enquête SUMER | Réalisation: Antoine Rouillard-Pérain",
       colour="Catégorie") +
-    geom_text_repel( data=data %>% filter(m.previs>90 | m.atypik>150), aes(label=psl)) +
-    geom_abline() +
+    geom_text_repel( data=data %>% filter(m.previs>90 | m.atypik>150 | col=="professions du rail"), aes(label=psl), hjust=1) +
     theme_ipsum()
 
 p
 ```
 
 Sauvegarde au format png
-```{r, message=FALSE}
-png("FrenchWorkingTime.png", width=600, height=600)
+```{r, message=FALSE, warning=FALSE, results='hide'}
+png("FrenchWorkingTime.png", width=750, height=600)
 p
 dev.off()
 ```
@@ -75,11 +89,11 @@ Ce graphique permet de:
 - exporter en png
 ```{r, fig.width=10, fig.height=8}
 # Ajoute une colonne avec le texte du tooltip
-data$text <- paste("profession: ", data$psl,0, "\n", "effectif: ", round(data$eff,0), "\n", "score imprévisibilité: ", round(data$m.atypik,0), "\n", "score horaire atypique: ", round(data$m.previs,0), sep="")
+data$text <- paste("profession: ", data$psl, "\n", "effectif: ", round(data$eff,0), "\n", "score imprévisibilité: ", round(data$m.atypik,0), "\n", "score horaire atypique: ", round(data$m.previs,0), sep="")
 
 # Redo the static version
 p <- data %>% 
-  ggplot(aes(x = m.previs, y = m.atypik, size=eff, color=as.factor(psl1), text=text )) +
+  ggplot(aes(x = m.previs, y = m.atypik, size=eff, color=col, text=text )) +
     geom_point(alpha=0.9) +
     ylab("exposition aux horaires atypiques") +
     xlab("score moyen d'imprévisibilité des horaires") + 
@@ -89,7 +103,6 @@ p <- data %>%
       subtitle="Le théatre d'une illusion",
       caption="Source: enquête SUMER | Réalisation: Antoine Rouillard-Pérain",
       colour="Catégorie") +
-    geom_abline() +
     theme_ipsum()
 
 widg <- ggplotly(p, tooltip="text")
@@ -108,7 +121,7 @@ saveWidget(widg, file = "FrenchWorkingTime.html", selfcontained = TRUE)
 Ce tableau permet de rechercher une profession en particulier
 ```{r}
 tmp <- data %>% 
-  select(-text) %>%
+  select(-text, -col) %>%
   mutate( eff=round(eff,0), m.atypik=round(m.atypik,0), m.previs=round(m.previs,0) )
 colnames(tmp) <- c("Catégorie", "Profession", "Effectif", "Score horaire atypique", "Score horaire imprévisible")
 datatable( tmp, rownames = FALSE, filter="top", options = list(pageLength = 15, scrollX=T) )
